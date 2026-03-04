@@ -35,3 +35,33 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 # AIWarAgent
+
+AI Hackathon frontend for submitting projects and viewing leaderboard.
+
+## Setup
+
+1. Copy the example env and set your Apps Script URL:
+
+```bash
+cp .env.example .env.local
+# edit .env.local and set NEXT_PUBLIC_API_BASE
+```
+
+2. Install and run:
+
+```bash
+npm install
+npm run dev
+```
+
+Open http://localhost:3000
+
+## Environment
+
+- `NEXT_PUBLIC_API_BASE` - your Apps Script web app `exec` URL.
+
+## Notes
+
+- `.env*` is ignored by `.gitignore` to avoid leaking secrets. Use `.env.local` locally only.
+- Judges update scores directly in Google Sheets via the Apps Script backend.
+
