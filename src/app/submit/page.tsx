@@ -1,109 +1,101 @@
-"use client";
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { submitProject } from '../../services/api';
+'use client';
+import { useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Send, Link as LinkIcon, ShieldAlert } from 'lucide-react';
+import { useAppDispatch, useAppSelector } from '../../store';
+import { fetchTeamData } from '../../store/slices/teamSlice';
+import PageWrapper from '../../components/PageWrapper';
+import SubmitForm from '../../components/SubmitForm';
 
 export default function SubmitPage() {
-  const router = useRouter();
-  const [round, setRound] = useState('1');
-  const [link, setLink] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [teamName, setTeamName] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  const { submissions, status } = useAppSelector((state) => state.team);
 
   useEffect(() => {
-    const t = localStorage.getItem('teamName');
-    if (!t) { router.push('/login'); return; }
-    setTeamName(t);
-  }, [router]);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setSuccess(null);
-    setLoading(true);
-    try {
-      await submitProject(teamName || '', round, link.trim());
-      setSuccess(`Round ${round} submission saved successfully!`);
-      setLink('');
-    } catch (err) {
-      setError(String(err));
-    } finally {
-      setLoading(false);
+    if (status === 'idle') {
+      dispatch(fetchTeamData());
     }
-  }
+  }, [status, dispatch]);
+
+  const isLoading = status === 'loading' || status === 'idle';
 
   return (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-extrabold text-gray-900">Submit Project</h1>
-          <p className="text-gray-500 mt-2 text-sm">
-            {teamName ? `Submitting as: ${teamName}` : 'Loading...'}
-          </p>
-        </div>
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white rounded-2xl border shadow-sm px-8 py-8 space-y-5"
+    <PageWrapper>
+      <div className="max-w-4xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-10 relative z-10"
         >
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Round</label>
-            <select
-              value={round}
-              onChange={(e) => setRound(e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
-            >
-              <option value="1">Round 1</option>
-              <option value="2">Round 2</option>
-              <option value="3">Round 3</option>
-            </select>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-widest mb-4 border border-white/10"
+            style={{ background: 'var(--bg-elevated)', color: 'var(--accent-light)' }}>
+            <Send size={14} className="text-red-500" /> Secure Uplink
           </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Google Drive Link</label>
-            <input
-              value={link}
-              onChange={(e) => setLink(e.target.value)}
-              required
-              placeholder="https://drive.google.com/..."
-              className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
-            />
+          <h1 className="text-4xl font-black mb-3 text-white tracking-tight uppercase flex items-center gap-3">
+            <span className="w-2 h-8 bg-red-600 rounded-sm" />
+            Project Transmission
+          </h1>
+          <p className="text-sm font-sans text-zinc-400">
+            Establish a secure connection and transmit your Google Drive payload for evaluation.
+          </p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-[1fr_300px] gap-8">
+          {/* Main Form Area */}
+          <div className="relative">
+            {isLoading ? (
+              <div className="card h-96 p-8 flex items-center justify-center flex-col gap-4 border border-white/5 bg-black/60 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent pointer-events-none" />
+                <div className="w-10 h-10 rounded-full border-[3px] border-zinc-800 border-t-red-500 animate-spin z-10" />
+                <p className="text-sm font-bold uppercase tracking-widest text-zinc-500 z-10">Initializing Uplink...</p>
+              </div>
+            ) : (
+              <SubmitForm existingLinks={submissions} />
+            )}
           </div>
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg px-4 py-2.5">
-              {error}
-            </div>
-          )}
-          {success && (
-            <div className="bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg px-4 py-2.5">
-              ✓ {success}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading || !teamName}
-            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-semibold rounded-lg transition-colors"
+          {/* Guidelines Sidebar */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+            className="card p-6 h-fit border border-white/5 relative overflow-hidden group hover:border-red-500/20 transition-colors"
+            style={{ background: 'var(--bg-elevated)' }}
           >
-            {loading ? 'Submitting...' : 'Submit'}
-          </button>
-        </form>
+            <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 blur-2xl group-hover:bg-red-500/10 transition-colors pointer-events-none" />
+
+            <h3 className="font-bold text-sm mb-5 flex items-center gap-2 uppercase tracking-widest text-white">
+              <ShieldAlert size={16} className="text-red-500" />
+              Directives
+            </h3>
+
+            <ul className="space-y-5 relative z-10">
+              {[
+                { title: 'Data Format', desc: 'System only accepts valid Google Drive endpoints.' },
+                { title: 'Clearance', desc: 'Set payload permissions to "Anyone with the link can view".' },
+                { title: 'Overrides', desc: 'Resubmissions permitted until the operational window closes.' },
+              ].map(({ title, desc }) => (
+                <li key={title} className="pl-3 border-l-[1.5px] border-zinc-800 hover:border-red-500/50 transition-colors py-1">
+                  <p className="text-xs font-bold text-zinc-200 uppercase tracking-wide">
+                    {title}
+                  </p>
+                  <p className="text-xs mt-1.5 leading-relaxed text-zinc-500">
+                    {desc}
+                  </p>
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-8 pt-6 border-t border-white/10 relative z-10">
+              <p className="text-[10px] uppercase font-bold tracking-widest mb-3 text-zinc-600">Valid Target Protocol</p>
+              <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs font-mono break-all bg-black/50 border border-white/5 text-zinc-400 group-hover:border-red-500/20 transition-colors">
+                <LinkIcon size={12} className="shrink-0 text-red-500/50" />
+                drive.google.com/drive/folders/1a2...
+              </div>
+            </div>
+          </motion.div>
+        </div>
       </div>
-    </div>
-  );
-}
-          <label className="block text-sm font-medium">Google Drive Link</label>
-          <input value={link} onChange={(e) => setLink(e.target.value)} required className="mt-1 w-full border px-3 py-2 rounded" />
-        </div>
-        {error && <div className="text-red-500">{error}</div>}
-        {success && <div className="text-green-600">{success}</div>}
-        <div>
-          <button type="submit" disabled={loading} className="px-4 py-2 bg-blue-600 text-white rounded">
-            {loading ? 'Submitting...' : 'Submit'}
-          </button>
-        </div>
-      </form>
-    </div>
+    </PageWrapper>
   );
 }
