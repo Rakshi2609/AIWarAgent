@@ -37,6 +37,29 @@ export async function getRegisteredTeams(): Promise<Team[]> {
     }));
 }
 
+// ─── Register new team ───────────────────────────────────────────────────────────
+export async function registerTeam(data: { teamName: string; leaderName: string; email: string; members?: string[] }): Promise<void> {
+    const teams = await getRegisteredTeams();
+    if (teams.some(t => t.email === data.email.toLowerCase().trim())) {
+        throw new Error('Email already registered');
+    }
+
+    const sheets = getSheets();
+    const row = [
+        data.teamName,
+        data.leaderName,
+        data.email.toLowerCase().trim(),
+        ...(data.members || [])
+    ];
+
+    await sheets.spreadsheets.values.append({
+        spreadsheetId: SHEET_ID,
+        range: 'Teams!A:F',
+        valueInputOption: 'USER_ENTERED',
+        requestBody: { values: [row] },
+    });
+}
+
 // ─── Get leaderboard ───────────────────────────────────────────────────────────
 // Scores sheet columns:
 // A: TeamName | B-E: R1(Arch,Innov,Tech,Pres) | F: R1Total
