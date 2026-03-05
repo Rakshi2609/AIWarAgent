@@ -25,9 +25,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-10 relative">
                 {children}
               </main>
-              <footer className="border-t py-8 text-center text-xs mt-auto glass-footer">
-                <p className="text-gray-400">AI War 2026 &mdash; Evaluation Portal</p>
-                <p className="mt-1 text-gray-500">Powered by Next.js &amp; Three.js</p>
+              <footer className="border-t border-red-900/30 py-8 text-center text-xs mt-auto glass-footer backdrop-blur-xl bg-black/50">
+                <p className="text-zinc-400 font-sans tracking-wide uppercase font-semibold">AI War 2026 &mdash; Evaluation Portal</p>
+                <p className="mt-1.5 text-zinc-500 font-sans tracking-widest text-[10px] uppercase">
+                  Powered by <span className="text-red-500">Artificial Intelligence Club</span> VIT Chennai
+                </p>
               </footer>
             </div>
           </StoreProvider>
