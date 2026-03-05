@@ -17,6 +17,13 @@ export default function LeaderboardPage() {
     }
   }, [status, dispatch]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      dispatch(fetchLeaderboard());
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [dispatch]);
+
   const isLoading = status === 'loading' || status === 'idle';
 
   return (
